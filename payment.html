@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Gateway with Stripe</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #7f3fff; /* Violet background color */
+        }
+        #payment-form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #7f3fff; /* Violet text color */
+        }
+        #card-element {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #card-errors {
+            color: #e74c3c;
+            margin-top: 10px;
+        }
+        .payment-option {
+            margin: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .payment-option input[type="radio"] {
+            margin-right: 5px;
+        }
+        #submit {
+            background-color: #7f3fff; /* Violet button color */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        #submit:hover {
+            background-color: #592acc; /* Darker violet on hover */
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+        #success-message {
+            color: #27ae60;
+            margin-top: 10px;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <h1 style="font-family: 'Poppins', sans-serif; color: white;">Payment Gateway</h1>
+
+    <div id="payment-form">
+        <label for="card-element">
+            Credit or debit card
+        </label>
+        <div id="card-element">
+        </div>
+
+        <!-- Used to display form errors. -->
+        <div id="card-errors" role="alert"></div>
+
+        <div class="payment-option">
+            <input type="radio" name="payment-option" id="credit-card" checked>
+            <label for="credit-card">Credit Card</label>
+        </div>
+        <div class="payment-option">
+            <input type="radio" name="payment-option" id="paypal">
+            <label for="paypal">Debit card</label>
+        </div>
+
+        <button id="submit">Submit Payment</button>
+        <div class="loading" id="loading-message">Processing...</div>
+        <div id="success-message" style="display: none;">Payment successful!</div>
+    </div>
+
+    <script>
+        const stripe = Stripe('pk_test_51NbNjySEJskGMQSsA6bV5nMv3bS8hJqmm16vYka6w9s2Y4e6rRXsmd9gk0FA4Fq7n0ClyVyVZ6CmZSe7POHZ4RRt00epVU8CZ2');
+        const elements = stripe.elements();
+        const cardElement = elements.create('card');
+        const cardErrors = document.getElementById('card-errors');
+        const submitButton = document.getElementById('submit');
+        const loadingMessage = document.getElementById('loading-message');
+        const successMessage = document.getElementById('success-message');
+
+        cardElement.mount('#card-element');
+
+        cardElement.on('change', function(event) {
+            if (event.error) {
+                cardErrors.textContent = event.error.message;
+            } else {
+                cardErrors.textContent = '';
+            }
+        });
+
+        submitButton.addEventListener('click', async () => {
+            submitButton.disabled = true;
+            loadingMessage.style.display = 'block';
+
+            const { token, error } = await stripe.createToken(cardElement);
+
+            if (error) {
+                cardErrors.textContent = error.message;
+                submitButton.disabled = false;
+                loadingMessage.style.display = 'none';
+            } else {
+                // Send the token to your server for processing
+                fetch('/process-payment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ token: token.id })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    loadingMessage.style.display = 'none';
+                    successMessage.style.display = 'block';
+                    // You might want to reset the form or perform other actions here
+                })
+                .catch(error => {
+                    console.error(error);
+                    cardErrors.textContent = 'An error occurred while processing the payment.';
+                    submitButton.disabled = false;
+                    loadingMessage.style.display = 'none';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

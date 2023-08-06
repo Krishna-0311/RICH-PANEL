@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subscription Plan Selection</title>
+<style>
+  /* Your CSS styles here */
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f3f3f3;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  .container {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: center;
+    width: 80%;
+    max-width: 600px;
+  }
+
+  h1 {
+    color: #333;
+    margin-bottom: 20px;
+  }
+
+  .plan-card {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    margin: 10px;
+    padding: 20px;
+    cursor: pointer;
+    transition: border-color 0.3s;
+  }
+
+  .selected {
+    border-color: #007bff !important;
+  }
+
+  .btn {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+  }
+
+  .btn:hover {
+    background-color: #0056b3;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Select a Subscription Plan</h1>
+    <div class="plan-card" onclick="selectPlan(this)">
+      <h2>Basic</h2>
+      <p>Monthly Price: 100 INR</p>
+      <p>Yearly Price: 1000 INR</p>
+    </div>
+    <div class="plan-card" onclick="selectPlan(this)">
+      <h2>Standard</h2>
+      <p>Monthly Price: 200 INR</p>
+      <p>Yearly Price: 2000 INR</p>
+    </div>
+    <div class="plan-card" onclick="selectPlan(this)">
+      <h2>Premium</h2>
+      <p>Monthly Price: 500 INR</p>
+      <p>Yearly Price: 5000 INR</p>
+    </div>
+    <div class="plan-card" onclick="selectPlan(this)">
+      <h2>Regular</h2>
+      <p>Monthly Price: 700 INR</p>
+      <p>Yearly Price: 7000 INR</p>
+    </div>
+    <button class="btn" onclick="proceedToPayment()">Proceed to Payment</button>
+  </div>
+
+  <script>
+    let selectedPlan = null;
+
+    function selectPlan(planCard) {
+      if (selectedPlan) {
+        selectedPlan.classList.remove("selected");
+      }
+      planCard.classList.add("selected");
+      selectedPlan = planCard;
+    }
+
+    function proceedToPayment() {
+      if (selectedPlan) {
+        const planName = selectedPlan.querySelector("h2").textContent;
+        const monthlyPrice = selectedPlan.querySelector("p:nth-child(2)").textContent.split(":")[1].trim();
+        const yearlyPrice = selectedPlan.querySelector("p:nth-child(3)").textContent.split(":")[1].trim();
+
+        const params = new URLSearchParams({
+          planName: planName,
+          monthlyPrice: monthlyPrice,
+          yearlyPrice: yearlyPrice
+        });
+
+        window.location.href = `payment.html?${params.toString()}`;
+      }
+    }
+  </script>
+</body>
+</html>
